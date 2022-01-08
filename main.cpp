@@ -180,6 +180,7 @@ int main()
 		std::cout << "glTexImage2D error: " << gl_error << std::endl;
 	}
 
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	const char* height_path = "res/data/height.png";
 	SDL_Surface* height_surface = IMG_Load(height_path);
@@ -367,7 +368,10 @@ int main()
 			std::cout << "rv_render error: " << gl_error << std::endl;
 		}
 
+		// reset unpack options
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		glPixelStorei(GL_PACK_ROW_LENGTH, 0);
 
 		glBindTexture(GL_TEXTURE_2D, image_texture);
 		gl_error = glGetError();
@@ -375,7 +379,7 @@ int main()
 			std::cout << "glBindTexture error: " << gl_error << std::endl;
 		}
 
-		// !!! Segfault
+		// Test Segfault
 		glTexSubImage2D(GL_TEXTURE_2D,
 						0,
 						0, 0, image_surface->w, image_surface->h,
@@ -393,6 +397,8 @@ int main()
 
 	rv_map_exit(context);
 	rv_exit(context);
+
+	std::cout << "rv done" << std::endl;
 
 	SDL_FreeSurface(height_surface);
 	SDL_FreeSurface(meta_surface);
