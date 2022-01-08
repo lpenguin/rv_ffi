@@ -88,7 +88,7 @@ int main()
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(&DebugCallbackARB, nullptr);
 
-	const char* image_surface_path = "/x/code/rv_ffi/data/screen.png";
+	const char* image_surface_path = "res/data/screen.png";
 	SDL_Surface* image_surface = IMG_Load(image_surface_path);
 	if(image_surface == nullptr){
 		printf("error loading height image \"%s\": %s\n", image_surface_path, IMG_GetError());
@@ -113,21 +113,21 @@ int main()
 	}
 
 
-	const char* height_path = "/x/code/rv_ffi/data/height.png";
+	const char* height_path = "res/data/height.png";
 	SDL_Surface* height_surface = IMG_Load(height_path);
 	if(height_surface == nullptr){
 		printf("error loading height image \"%s\": %s\n", height_path, IMG_GetError());
 		return 1;
 	}
 
-	const char* meta_path = "/x/code/rv_ffi/data/meta.png";
+	const char* meta_path = "res/data/meta.png";
 	SDL_Surface* meta_surface = IMG_Load(meta_path);
 	if(meta_surface == nullptr){
 		printf("error loading meta image \"%s\": %s\n", meta_path, IMG_GetError());
 		return 1;
 	}
 
-	const char* table_path = "/x/code/rv_ffi/data/table.png";
+	const char* table_path = "res/data/table.png";
 	SDL_Surface* table_surface = IMG_Load(table_path);
 	if(table_surface == nullptr){
 		printf("error loading table image \"%s\": %s\n", table_path, IMG_GetError());
