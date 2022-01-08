@@ -4,6 +4,7 @@
 #include <SDL_image.h>
 #include <cstdint>
 #include <math.h>
+#include <string>
 
 #include "vange_rs.h"
 
@@ -39,6 +40,65 @@ rv_quaternion rotation_quaternion(rv_vector3 axis, float angle_radians){
 	return result;
 }
 
+const char * get_debug_type_str(GLenum type){
+	switch(type){
+	case GL_DEBUG_TYPE_ERROR:
+		return "ERROR";
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		return "DEPRECATED_BEHAVIOR";
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		return "UNDEFINED_BEHAVIOR";
+	case GL_DEBUG_TYPE_PORTABILITY:
+		return "PORTABILITY";
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		return "PERFORMANCE";
+	case GL_DEBUG_TYPE_OTHER:
+		return "OTHER";
+	case GL_DEBUG_TYPE_MARKER:
+		return "MARKER";
+	case GL_DEBUG_TYPE_POP_GROUP:
+		return "POP_GROUP";
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		return "PUSH_GROUP";
+	default:
+		return "Unknown";
+	}
+}
+
+const char* get_debug_severity_str(GLenum severity){
+	switch(severity){
+	case GL_DEBUG_SEVERITY_HIGH:
+		return "HIGH";
+	case GL_DEBUG_SEVERITY_LOW:
+		return "LOW";
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		return "MEDIUM";
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		return "NOTIFICATION";
+	default:
+		return "Unknown";
+	}
+}
+
+const char* get_debug_source_str(GLenum source){
+	switch(source){
+	case GL_DEBUG_SOURCE_API:
+		return "API";
+	case GL_DEBUG_SOURCE_APPLICATION:
+		return "APPLICATION";
+	case GL_DEBUG_SOURCE_OTHER:
+		return "OTHER";
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		return "SHADER_COMPILER";
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		return "THIRD_PARTY";
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		return "WINDOW_SYSTEM";
+	default:
+		return "Unknown";
+	}
+}
+
 void DebugCallbackARB(GLenum source,
                       GLenum type,
                       GLuint id,
@@ -46,10 +106,17 @@ void DebugCallbackARB(GLenum source,
                       GLsizei length,
                       const GLchar* message,
                       const GLvoid* userParam) {
-	if (type == GL_DEBUG_TYPE_ERROR) {
-		printf("GL ERROR:\n");
-		printf("\tseverity=%d\n", severity);
-		printf("\tmessage=%s\n", message);
+	if(userParam != nullptr ||
+	   type == GL_DEBUG_TYPE_ERROR)
+	{
+		std::cout << "GL Debug Message:"
+				  << std::endl
+				  << "\tseverity=" << get_debug_severity_str(severity)
+				  << ", type=" << get_debug_type_str(type)
+				  << ", source=" << get_debug_source_str(source)
+				  << std::endl;
+
+		std::cout << "\tmessage=" << std::string(message).substr(0, length) << std::endl;
 	}
 }
 
@@ -86,7 +153,8 @@ int main()
 	std::cout << "GL version: " << gl_version << std::endl;
 
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(&DebugCallbackARB, nullptr);
+	// pass here any value to catch only every debug message
+	glDebugMessageCallback(&DebugCallbackARB, (GLvoid*)true);
 
 	const char* image_surface_path = "res/data/screen.png";
 	SDL_Surface* image_surface = IMG_Load(image_surface_path);
