@@ -278,14 +278,14 @@ int main()
 //	std::cout << "rv_map_init" << std::endl;
 //	rv_map_init(context, map_desc);
 
-//	rv_rect update_region {
-//		.x = 0,
-//		.y = 0,
-//		.width = map_width,
-//		.height = map_height,
-//	};
-//	std::cout << "rv_map_request_update" << std::endl;
-//	rv_map_request_update(context, update_region);
+	rv_rect update_region {
+		.x = 0,
+		.y = 0,
+		.width = map_width,
+		.height = map_height,
+	};
+	std::cout << "rv_map_request_update" << std::endl;
+	rv_map_request_update(context, update_region);
 
 
 	float angle = -M_PI / 2;
