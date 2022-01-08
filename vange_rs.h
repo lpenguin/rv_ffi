@@ -15,13 +15,13 @@ struct rv_camera_description {
 	float far;
 };
 
-struct vange_rs_vector3 {
+struct rv_vector3 {
 	float x;
 	float y;
 	float z;
 };
 
-struct vange_rs_quaternion {
+struct rv_quaternion {
 	float x;
 	float y;
 	float z;
@@ -29,8 +29,8 @@ struct vange_rs_quaternion {
 };
 
 struct rv_transform {
-	vange_rs_vector3 position;
-	vange_rs_quaternion rotation;
+	rv_vector3 position;
+	rv_quaternion rotation;
 };
 
 typedef void* (*rv_gl_functor)(const char*) ;

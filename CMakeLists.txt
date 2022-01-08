@@ -15,7 +15,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(rv_ffi
 	main.cpp
 	vange_rs.h
-	HandmadeMath.h
 	)
 
 include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})

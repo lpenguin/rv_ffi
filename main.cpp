@@ -3,12 +3,41 @@
 #include <GLES3/gl3.h>
 #include <SDL_image.h>
 #include <cstdint>
+#include <math.h>
 
 #include "vange_rs.h"
-#define HANDMADE_MATH_IMPLEMENTATION
-#include "HandmadeMath.h"
 
 using namespace std;
+
+float dot_vec3(rv_vector3 v1, rv_vector3 v2){
+	return v1.x * v2.x +
+			v1.y * v2.y +
+			v1.z * v2.z;
+}
+
+rv_vector3 mul_vec3(rv_vector3 vector, float value){
+	return {vector.x * value, vector.y * value, vector.z * value};
+}
+
+rv_vector3 div_vec3(rv_vector3 vector, float value){
+	return {vector.x / value, vector.y / value, vector.z / value};
+}
+
+rv_quaternion rotation_quaternion(rv_vector3 axis, float angle_radians){
+	rv_quaternion result;
+
+	float axis_norm = sqrtf(dot_vec3(axis, axis));
+	float sine_of_rotation = sinf(angle_radians / 2.0f);
+	rv_vector3 rotated_vector = mul_vec3(axis, sine_of_rotation);
+
+	rv_vector3 xyz = div_vec3(rotated_vector, axis_norm);
+	result.x = xyz.x;
+	result.y = xyz.y;
+	result.z = xyz.z;
+	result.w = cosf(angle_radians / 2.0f);
+
+	return result;
+}
 
 int main()
 {
@@ -41,22 +70,50 @@ int main()
 	const GLubyte* gl_version = glGetString(GL_VERSION);
 	std::cout << "GL version: " << gl_version << std::endl;
 
-	const char* height_path = "/home/nikita/Sources/Test3DMap/indexed/export/height.png";
+	const char* image_surface_path = "/home/nikita/Sources/rv_ffi/data/screen.png";
+	SDL_Surface* image_surface = IMG_Load(image_surface_path);
+	if(image_surface == nullptr){
+		printf("error loading height image \"%s\": %s\n", image_surface_path, IMG_GetError());
+		return 1;
+	}
+
+	GLenum gl_error;
+	GLuint image_texture;
+	glGenTextures(1, &image_texture);
+
+	glBindTexture(GL_TEXTURE_2D, image_texture);
+	gl_error = glGetError();
+	if(gl_error != 0){
+		std::cout << "glBindTexture error: " << gl_error << std::endl;
+	}
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_surface->w, image_surface->h, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, image_surface->pixels);
+	gl_error = glGetError();
+	if(gl_error != 0){
+		std::cout << "glTexImage2D error: " << gl_error << std::endl;
+	}
+
+
+	const char* height_path = "/home/nikita/Sources/rv_ffi/data/height.png";
 	SDL_Surface* height_surface = IMG_Load(height_path);
 	if(height_surface == nullptr){
 		printf("error loading height image \"%s\": %s\n", height_path, IMG_GetError());
+		return 1;
 	}
 
-	const char* meta_path = "/home/nikita/Sources/Test3DMap/indexed/export/height.png";
+	const char* meta_path = "/home/nikita/Sources/rv_ffi/data/meta.png";
 	SDL_Surface* meta_surface = IMG_Load(meta_path);
 	if(meta_surface == nullptr){
 		printf("error loading meta image \"%s\": %s\n", meta_path, IMG_GetError());
+		return 1;
 	}
 
-	const char* table_path = "/home/nikita/Sources/Test3DMap/indexed/export/table.png";
+	const char* table_path = "/home/nikita/Sources/rv_ffi/data/table.png";
 	SDL_Surface* table_surface = IMG_Load(table_path);
 	if(table_surface == nullptr){
 		printf("error loading table image \"%s\": %s\n", table_path, IMG_GetError());
+		return 1;
 	}
 
 	uint8_t* height_bytes = (uint8_t*)height_surface->pixels;
@@ -90,7 +147,6 @@ int main()
 
 	rv_gl_functor gl_functor = (rv_gl_functor)SDL_GL_GetProcAddress;
 
-
 	rv_init_descriptor init_desc = {
 		.width = window_width,
 		.height = window_height,
@@ -112,22 +168,6 @@ int main()
 	std::cout << "rv_map_init" << std::endl;
 	rv_map_init(context, map_desc);
 
-	rv_rect update_region {
-		.x = 0,
-		.y = 0,
-		.width = map_width,
-		.height = map_height,
-	};
-
-	std::cout << "rv_map_exit" << std::endl;
-	rv_map_exit(context);
-
-	std::cout << "rv_map_init" << std::endl;
-	rv_map_init(context, map_desc);
-
-	std::cout << "rv_map_request_update" << std::endl;
-	rv_map_request_update(context, update_region);
-
 	rv_camera_description camera_desc {
 		.fov = 43.0f,
 		.aspect = (float)window_width / (float)window_height,
@@ -135,7 +175,7 @@ int main()
 		.far = 10000.0f,
 	};
 
-	std::cout << "rv_map_init" << std::endl;
+	std::cout << "rv_camera_init" << std::endl;
 	rv_camera_init(context, camera_desc);
 	rv_rect viewport {
 		.x = 0,
@@ -144,25 +184,36 @@ int main()
 		.height = window_height,
 	};
 
-	hmm_quaternion q = HMM_QuaternionFromAxisAngle(HMM_Vec3(1.0f, 0, 0), 90);
 
-	rv_transform transform {
-		.position = {
-			.x = 1024,
-			.y = 1024,
-			.z = 512,
-		},
-		.rotation = {
-			.x = q.X,
-			.y = q.Y,
-			.z = q.Z,
-			.w = q.W,
-		},
+//	std::cout << "rv_map_exit" << std::endl;
+//	rv_map_exit(context);
 
+//	std::cout << "rv_map_init" << std::endl;
+//	rv_map_init(context, map_desc);
+
+//	rv_rect update_region {
+//		.x = 0,
+//		.y = 0,
+//		.width = map_width,
+//		.height = map_height,
+//	};
+//	std::cout << "rv_map_request_update" << std::endl;
+//	rv_map_request_update(context, update_region);
+
+
+	float angle = -M_PI / 2;
+	float angle_step = M_PI/30.0f;
+	float move_step = 10;
+
+	rv_vector3 position {
+		.x = 1024,
+		.y = 1024,
+		.z = 512,
 	};
-	rv_camera_set_transform(context, transform);
-	rv_render(context, viewport);
-	rv_render(context, viewport);
+
+	rv_quaternion rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
+
+
 
 	bool close = false;
 	while (!close) {
@@ -177,10 +228,72 @@ int main()
 				// handling of close button
 				close = true;
 				break;
+
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_W:
+					position.y += move_step;
+					break;
+				case SDL_SCANCODE_S:
+					position.y -= move_step;
+					break;
+				case SDL_SCANCODE_A:
+					position.x -= move_step;
+					break;
+				case SDL_SCANCODE_D:
+					position.x += move_step;
+					break;
+				case SDL_SCANCODE_Q:
+					position.z -= move_step;
+					break;
+				case SDL_SCANCODE_E:
+					position.z += move_step;
+					break;
+				case SDL_SCANCODE_Z:
+					angle -= angle_step;
+					rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
+					break;
+				case SDL_SCANCODE_X:
+					angle += angle_step;
+					rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
+					break;
+				default:
+					break;
+				}
+				break;
 			}
+
+
 		}
 
+		rv_transform transform {
+			.position = position,
+			.rotation = rotation,
+		};
+		std::cout << "rv_camera_set_transform" << std::endl;
+		rv_camera_set_transform(context, transform);
+
+		std::cout << "rv_render" << std::endl;
 		rv_render(context, viewport);
+
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+		glBindTexture(GL_TEXTURE_2D, image_texture);
+		gl_error = glGetError();
+		if(gl_error != 0){
+			std::cout << "glBindTexture error: " << gl_error << std::endl;
+		}
+
+		// !!! Segfault
+		glTexSubImage2D(GL_TEXTURE_2D,
+						0,
+						0, 0, image_surface->w, image_surface->h,
+						 GL_RGBA, GL_UNSIGNED_BYTE, image_surface->pixels);
+
+		gl_error = glGetError();
+		if(gl_error != 0){
+			std::cout << "glTexImage2D error: " << gl_error << std::endl;
+		}
 
 		SDL_GL_SwapWindow(window);
 
@@ -189,8 +302,12 @@ int main()
 
 	rv_map_exit(context);
 	rv_exit(context);
+
 	SDL_FreeSurface(height_surface);
 	SDL_FreeSurface(meta_surface);
+	SDL_FreeSurface(table_surface);
+	SDL_FreeSurface(image_surface);
+
 	SDL_GL_DeleteContext(gl_context);
 	SDL_DestroyWindow(window);
 
