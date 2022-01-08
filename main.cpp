@@ -1,6 +1,6 @@
 #include <iostream>
 #include <SDL2/SDL.h>
-#include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 #include <SDL_image.h>
 #include <cstdint>
 #include <math.h>
@@ -39,6 +39,20 @@ rv_quaternion rotation_quaternion(rv_vector3 axis, float angle_radians){
 	return result;
 }
 
+void DebugCallbackARB(GLenum source,
+                      GLenum type,
+                      GLuint id,
+                      GLenum severity,
+                      GLsizei length,
+                      const GLchar* message,
+                      const GLvoid* userParam) {
+	if (type == GL_DEBUG_TYPE_ERROR) {
+		printf("GL ERROR:\n");
+		printf("\tseverity=%d\n", severity);
+		printf("\tmessage=%s\n", message);
+	}
+}
+
 int main()
 {
 	const int window_width = 1280;
@@ -56,6 +70,7 @@ int main()
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
@@ -70,7 +85,10 @@ int main()
 	const GLubyte* gl_version = glGetString(GL_VERSION);
 	std::cout << "GL version: " << gl_version << std::endl;
 
-	const char* image_surface_path = "/home/nikita/Sources/rv_ffi/data/screen.png";
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(&DebugCallbackARB, nullptr);
+
+	const char* image_surface_path = "/x/code/rv_ffi/data/screen.png";
 	SDL_Surface* image_surface = IMG_Load(image_surface_path);
 	if(image_surface == nullptr){
 		printf("error loading height image \"%s\": %s\n", image_surface_path, IMG_GetError());
@@ -95,21 +113,21 @@ int main()
 	}
 
 
-	const char* height_path = "/home/nikita/Sources/rv_ffi/data/height.png";
+	const char* height_path = "/x/code/rv_ffi/data/height.png";
 	SDL_Surface* height_surface = IMG_Load(height_path);
 	if(height_surface == nullptr){
 		printf("error loading height image \"%s\": %s\n", height_path, IMG_GetError());
 		return 1;
 	}
 
-	const char* meta_path = "/home/nikita/Sources/rv_ffi/data/meta.png";
+	const char* meta_path = "/x/code/rv_ffi/data/meta.png";
 	SDL_Surface* meta_surface = IMG_Load(meta_path);
 	if(meta_surface == nullptr){
 		printf("error loading meta image \"%s\": %s\n", meta_path, IMG_GetError());
 		return 1;
 	}
 
-	const char* table_path = "/home/nikita/Sources/rv_ffi/data/table.png";
+	const char* table_path = "/x/code/rv_ffi/data/table.png";
 	SDL_Surface* table_surface = IMG_Load(table_path);
 	if(table_surface == nullptr){
 		printf("error loading table image \"%s\": %s\n", table_path, IMG_GetError());
@@ -275,6 +293,11 @@ int main()
 
 		std::cout << "rv_render" << std::endl;
 		rv_render(context, viewport);
+
+		gl_error = glGetError();
+		if(gl_error != 0){
+			std::cout << "rv_render error: " << gl_error << std::endl;
+		}
 
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
