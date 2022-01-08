@@ -371,7 +371,8 @@ int main()
 		// reset unpack options
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-		glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
 
 		glBindTexture(GL_TEXTURE_2D, image_texture);
 		gl_error = glGetError();
