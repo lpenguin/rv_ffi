@@ -216,8 +216,13 @@ int main()
 	int32_t map_width = height_surface->w;
 	int32_t map_height = height_surface->h;
 
+	const int32_t line_bottom = 0;
+	const int32_t line_top = map_height;
+
 	uint8_t** lineT = new uint8_t*[map_height];
-	for(int i = 0; i < map_height; i++){
+	std::fill(lineT, lineT + map_height, (uint8_t*)0);
+
+	for(int i = line_bottom; i < line_top; i++){
 		lineT[i] = new uint8_t[map_width * 2];
 		std::copy(
 					height_bytes  + i * map_width,
@@ -294,9 +299,9 @@ int main()
 
 	rv_rect update_region {
 		.x = 0,
-		.y = 0,
+		.y = line_bottom,
 		.width = map_width,
-		.height = map_height,
+		.height = line_top - line_bottom,
 	};
 	std::cout << "rv_map_request_update" << std::endl;
 	rv_map_request_update(context, update_region);
@@ -365,6 +370,19 @@ int main()
 			}
 
 
+		}
+
+		// Cycling the level
+		if(position.x < 0){
+			position.x = map_width + position.x;
+		} else if(position.x > map_width ){
+			position.x = position.x - map_width;
+		}
+
+		if(position.y < 0){
+			position.y = map_height + position.y;
+		} else if(position.y > map_height ){
+			position.y = position.y - map_height;
 		}
 
 		rv_transform transform {
