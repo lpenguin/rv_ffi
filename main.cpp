@@ -241,7 +241,9 @@ int main()
 
 	uint8_t* palette_data = (uint8_t*)palette_surface->pixels;
 	uint8_t palette[0x300] = {};
-	std::copy(palette_data, palette_data + 0x300, palette);
+	for(int i = 0; i < 0x300; i++){
+		palette[i] = palette_data[i] * 2;
+	}
 
 	rv_gl_functor gl_functor = (rv_gl_functor)SDL_GL_GetProcAddress;
 
