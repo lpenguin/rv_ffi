@@ -369,7 +369,14 @@ int main()
 			.position = position,
 			.rotation = rotation,
 		};
-		std::cout << "rv_camera_set_transform" << std::endl;
+
+		std::cout << "rv_camera_set_transform"
+			<< " position="
+			<< position.x << " " << position.y << " " << position.z
+			<< ", rotation="
+			<< rotation.x << " " << rotation.y << " " << rotation.z << " " << rotation.w
+			<< std::endl;
+
 		rv_camera_set_transform(context, transform);
 
 		std::cout << "rv_render" << std::endl;
