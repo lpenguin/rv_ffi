@@ -54,6 +54,9 @@ struct rv_map_description {
 
 	// 8 for world, 16 for escave
 	int32_t material_count;
+
+	// RGB for 256 colors
+	uint8_t* palette;
 };
 
 // TODO: or it could be left, bottom, right, top
