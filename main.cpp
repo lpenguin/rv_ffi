@@ -203,6 +203,13 @@ int main()
 		return 1;
 	}
 
+	const char* palette_path = "res/data/palette.png";
+	SDL_Surface* palette_surface = IMG_Load(palette_path);
+	if(palette_surface == nullptr){
+		printf("error loading palette image \"%s\": %s\n", palette_path, IMG_GetError());
+		return 1;
+	}
+
 	uint8_t* height_bytes = (uint8_t*)height_surface->pixels;
 	uint8_t* meta_bytes = (uint8_t*)meta_surface->pixels;
 
@@ -232,13 +239,9 @@ int main()
 		material_end_offsets[i] = material_bytes[i * sizeof (uint32_t) + 1];
 	}
 
-	//TODO: load from file
+	uint8_t* palette_data = (uint8_t*)palette_surface->pixels;
 	uint8_t palette[0x300] = {};
-	for (int i=0; i<0x100; ++i) {
-		palette[3*i+0] = 0x80 + i * 17;
-		palette[3*i+1] = 0x80 + i * 19;
-		palette[3*i+2] = 0x80 + i * 23;
-	}
+	std::copy(palette_data, palette_data + 0x300, palette);
 
 	rv_gl_functor gl_functor = (rv_gl_functor)SDL_GL_GetProcAddress;
 
@@ -414,6 +417,7 @@ int main()
 	SDL_FreeSurface(meta_surface);
 	SDL_FreeSurface(table_surface);
 	SDL_FreeSurface(image_surface);
+	SDL_FreeSurface(palette_surface);
 
 	SDL_GL_DeleteContext(gl_context);
 	SDL_DestroyWindow(window);
