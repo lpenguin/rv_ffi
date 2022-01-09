@@ -7,6 +7,8 @@
 #include <string>
 
 #include "vange_rs.h"
+#include "Shader.h"
+#include "QuadVertexArray.h"
 
 using namespace std;
 
@@ -120,6 +122,40 @@ void DebugCallbackARB(GLenum source,
 	}
 }
 
+const char* vs_code = R"(
+	#version 300 es
+	precision mediump float;
+	// uniform mat4 transform;
+	// uniform vec4 uv_transform;
+	in vec2 position;
+	in vec2 texcoord0;
+
+	out vec2 uv;
+
+	void main() {
+		vec4 pos = vec4(position, 0.5, 1.0);
+
+		gl_Position = pos;
+		// uv = texcoord0 * uv_transform.zw + uv_transform.xy;
+		uv = texcoord0;
+	}
+)";
+
+const char* fs_code = R"(
+	#version 300 es
+	precision mediump float;
+
+	// uniform vec4 color;
+	uniform sampler2D tex;
+
+	in vec2 uv;
+	out vec4 FragColor;
+	void main() {
+		FragColor = texture(tex, uv);
+//		FragColor = vec4(uv.x, uv.y, 1.0, 1.0f);
+	}
+)";
+
 int main()
 {
 	const int window_width = 1280;
@@ -172,12 +208,30 @@ int main()
 	if(gl_error != 0){
 		std::cout << "glBindTexture error: " << gl_error << std::endl;
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_surface->w, image_surface->h, 0,
 				 GL_RGBA, GL_UNSIGNED_BYTE, image_surface->pixels);
 	gl_error = glGetError();
 	if(gl_error != 0){
 		std::cout << "glTexImage2D error: " << gl_error << std::endl;
+	}
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+
+	Shader shader(vs_code, fs_code);
+	QuadVertexArray vertex_array;
+
+	shader.use();
+	shader.set_uniform("tex", 0);
+	gl_error = glGetError();
+	if(gl_error != 0){
+		std::cout << "set_uniform error: " << gl_error << std::endl;
 	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -275,7 +329,7 @@ int main()
 	rv_map_init(context, map_desc);
 
 	rv_camera_description camera_desc {
-		.fov = 43.0f,
+		.fov = 102.68,//43.0f,
 		.aspect = (float)window_width / (float)window_height,
 		.near = 0.1f,
 		.far = 10000.0f,
@@ -319,11 +373,8 @@ int main()
 
 	rv_quaternion rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
 
-
-
 	bool close = false;
 	while (!close) {
-		glClear( GL_COLOR_BUFFER_BIT );
 		SDL_Event event;
 
 		// Events management
@@ -407,6 +458,18 @@ int main()
 			std::cout << "rv_render error: " << gl_error << std::endl;
 		}
 
+		const char* guiDebugGroup = "GUI render";
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, strlen(guiDebugGroup), guiDebugGroup);
+		GLint previousVAO;
+		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &previousVAO);
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_SCISSOR_TEST);
+		glDisable(GL_STENCIL_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
 		// reset unpack options
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -429,6 +492,20 @@ int main()
 		if(gl_error != 0){
 			std::cout << "glTexImage2D error: " << gl_error << std::endl;
 		}
+
+		// bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, image_texture);
+
+		// render container
+		shader.use();
+		vertex_array.bind();
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		shader.unuse();
+
+		glBindVertexArray(previousVAO);
+		glPopDebugGroup();
+
 
 		SDL_GL_SwapWindow(window);
 

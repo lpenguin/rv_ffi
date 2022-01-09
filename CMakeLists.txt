@@ -16,6 +16,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 add_executable(rv_ffi
 	main.cpp
 	vange_rs.h
+	Shader.cpp
+	Shader.h
+	QuadVertexArray.cpp
+	QuadVertexArray.h
 	)
 
 include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
