@@ -232,6 +232,14 @@ int main()
 		material_end_offsets[i] = material_bytes[i * sizeof (uint32_t) + 1];
 	}
 
+	//TODO: load from file
+	uint8_t palette[0x300] = {};
+	for (int i=0; i<0x100; ++i) {
+		palette[3*i+0] = 0x80 + i * 17;
+		palette[3*i+1] = 0x80 + i * 19;
+		palette[3*i+2] = 0x80 + i * 23;
+	}
+
 	rv_gl_functor gl_functor = (rv_gl_functor)SDL_GL_GetProcAddress;
 
 	rv_init_descriptor init_desc = {
@@ -250,6 +258,7 @@ int main()
 		.material_begin_offsets = material_begin_offsets,
 		.material_end_offsets = material_end_offsets,
 		.material_count = material_count,
+		.palette = palette,
 	};
 
 	std::cout << "rv_map_init" << std::endl;
@@ -288,7 +297,7 @@ int main()
 	rv_map_request_update(context, update_region);
 
 
-	float angle = -M_PI / 2;
+	float angle = -M_PI / 3;
 	float angle_step = M_PI/30.0f;
 	float move_step = 10;
 
