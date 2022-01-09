@@ -154,7 +154,7 @@ int main()
 
 	glEnable(GL_DEBUG_OUTPUT);
 	// pass here any value to catch only every debug message
-	glDebugMessageCallback(&DebugCallbackARB, (GLvoid*)true);
+	glDebugMessageCallback(&DebugCallbackARB, nullptr);
 
 	const char* image_surface_path = "res/data/screen.png";
 	SDL_Surface* image_surface = IMG_Load(image_surface_path);
