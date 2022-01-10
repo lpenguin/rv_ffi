@@ -54,9 +54,6 @@ struct rv_map_description {
 
 	// 8 for world, 16 for escave
 	int32_t material_count;
-
-	// RGB for 256 colors
-	uint8_t* palette;
 };
 
 // TODO: or it could be left, bottom, right, top
@@ -88,12 +85,11 @@ extern "C" {
 
 	void rv_map_exit(rv_context context);
 
-	void rv_map_request_update(rv_context context, rv_rect region);
+	void rv_map_update_data(rv_context context, rv_rect region);
+
+	void rv_map_update_palette(rv_context context, int32_t first_entry, int32_t entry_count, uint8_t* palette);
 
 	void rv_render(rv_context context, rv_rect viewport);
-
-	// TODO:
-	//void vange_rs_map_update_palette(uint32_t* palette, int32_t palette_size);
 
 #ifdef __cplusplus
 }
