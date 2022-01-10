@@ -8,6 +8,8 @@
 
 #include "vange_rs.h"
 
+extern "C" int rv_api_1;
+
 using namespace std;
 
 float dot_vec3(rv_vector3 v1, rv_vector3 v2){
@@ -122,6 +124,11 @@ void DebugCallbackARB(GLenum source,
 
 int main()
 {
+	// make API version used
+	if (rv_api_1 != 0) {
+		return 1;
+	}
+
 	const int window_width = 1280;
 	const int window_height = 720;
 
@@ -244,12 +251,6 @@ int main()
 		material_end_offsets[i] = material_bytes[i * sizeof (uint32_t) + 1];
 	}
 
-	uint8_t* palette_data = (uint8_t*)palette_surface->pixels;
-	uint8_t palette[0x300] = {};
-	for(int i = 0; i < 0x300; i++){
-		palette[i] = palette_data[i] * 2;
-	}
-
 	rv_gl_functor gl_functor = (rv_gl_functor)SDL_GL_GetProcAddress;
 
 	rv_init_descriptor init_desc = {
@@ -268,17 +269,25 @@ int main()
 		.material_begin_offsets = material_begin_offsets,
 		.material_end_offsets = material_end_offsets,
 		.material_count = material_count,
-		.palette = palette,
 	};
 
 	std::cout << "rv_map_init" << std::endl;
 	rv_map_init(context, map_desc);
 
+	uint8_t* palette_data = (uint8_t*)palette_surface->pixels;
+	uint8_t palette[0x300] = {};
+	for(int i = 0; i < 0x300; i++){
+		palette[i] = palette_data[i] * 2;
+	}
+
+	std::cout << "rv_map_update_palette" << std::endl;
+	rv_map_update_palette(context, 0, 0x100, palette);
+
 	rv_camera_description camera_desc {
 		.fov = 43.0f,
 		.aspect = (float)window_width / (float)window_height,
-		.near = 0.1f,
-		.far = 10000.0f,
+		.near = 10.0f,
+		.far = 5000.0f,
 	};
 
 	std::cout << "rv_camera_init" << std::endl;
@@ -303,8 +312,8 @@ int main()
 		.width = map_width,
 		.height = line_top - line_bottom,
 	};
-	std::cout << "rv_map_request_update" << std::endl;
-	rv_map_request_update(context, update_region);
+	std::cout << "rv_map_update_data" << std::endl;
+	rv_map_update_data(context, update_region);
 
 
 	float angle = -M_PI / 3;
