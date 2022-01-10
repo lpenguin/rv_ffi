@@ -277,7 +277,7 @@ int main()
 	uint8_t* palette_data = (uint8_t*)palette_surface->pixels;
 	uint8_t palette[0x300] = {};
 	for(int i = 0; i < 0x300; i++){
-		palette[i] = palette_data[i] * 2;
+		palette[i] = palette_data[i];
 	}
 
 	std::cout << "rv_map_update_palette" << std::endl;
