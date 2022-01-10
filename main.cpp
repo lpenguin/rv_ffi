@@ -286,8 +286,8 @@ int main()
 	rv_camera_description camera_desc {
 		.fov = 43.0f,
 		.aspect = (float)window_width / (float)window_height,
-		.near = 0.1f,
-		.far = 10000.0f,
+		.near = 10.0f,
+		.far = 5000.0f,
 	};
 
 	std::cout << "rv_camera_init" << std::endl;
