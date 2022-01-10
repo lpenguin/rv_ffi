@@ -328,7 +328,14 @@ int main()
 
 	rv_quaternion rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
 
-
+	update_region = {
+		.x = (int)position.x - 43,
+		.y = (int)position.y - 43,
+		.width = 88,
+		.height = 88,
+	};
+	std::cout << "rv_map_update_data" << std::endl;
+	rv_map_update_data(context, update_region);
 
 	bool close = false;
 	while (!close) {
