@@ -317,13 +317,6 @@ int main(int argc, char *argv[])
 
 	std::cout << "rv_camera_init" << std::endl;
 	rv_camera_init(context, camera_desc);
-	rv_rect viewport {
-		.x = 0,
-		.y = 0,
-		.width = window_width,
-		.height = window_height,
-	};
-
 
 //	std::cout << "rv_map_exit" << std::endl;
 //	rv_map_exit(context);
@@ -344,6 +337,9 @@ int main(int argc, char *argv[])
 	float angle = -M_PI / 3;
 	float angle_step = M_PI/30.0f;
 	float move_step = 10;
+
+	int32_t viewport_width = window_width;
+	int32_t viewport_height = window_height;
 
 	rv_vector3 position {
 		.x = 1024,
@@ -371,6 +367,19 @@ int main(int argc, char *argv[])
 
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_LEFT:
+					viewport_width = window_width / 2;
+					break;
+				case SDL_SCANCODE_RIGHT:
+					viewport_width = window_width;
+					break;
+				case SDL_SCANCODE_UP:
+					viewport_height = window_height;
+					break;
+				case SDL_SCANCODE_DOWN:
+					viewport_height = window_height / 2;
+					break;
+
 				case SDL_SCANCODE_W:
 					position.y += move_step;
 					break;
@@ -433,6 +442,12 @@ int main(int argc, char *argv[])
 
 		rv_camera_set_transform(context, transform);
 
+		rv_rect viewport {
+			.x = 0,
+			.y = 0,
+			.width = viewport_width,
+			.height = viewport_height,
+		};
 		std::cout << "rv_render" << std::endl;
 		rv_render(context, viewport);
 
