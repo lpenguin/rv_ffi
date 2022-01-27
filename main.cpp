@@ -125,7 +125,7 @@ void DebugCallbackARB(GLenum source,
 int main()
 {
 	// make API version used
-	if (rv_api_1 != 0) {
+	if (rv_api_1 != 1) {
 		return 1;
 	}
 
