@@ -13,7 +13,7 @@
 
 ### CMake
 
-Set `-DRUST_VANGERS_ROOT=<path>`, where `path` is directory containing `libvangers_ffi.a`
+Set `-DRUSTY_VANGERS_ROOT=<path>`, where `path` is directory containing `librusty_vangers.a`
 
 ### Compile/Run
 
