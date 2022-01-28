@@ -5,6 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <string>
+#include "glad/glad.h"
 
 #include "vange_rs.h"
 
@@ -42,94 +43,89 @@ rv_quaternion rotation_quaternion(rv_vector3 axis, float angle_radians){
 	return result;
 }
 
-//const char * get_debug_type_str(GLenum type){
-//	switch(type){
-//	case GL_DEBUG_TYPE_ERROR:
-//		return "ERROR";
-//	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-//		return "DEPRECATED_BEHAVIOR";
-//	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-//		return "UNDEFINED_BEHAVIOR";
-//	case GL_DEBUG_TYPE_PORTABILITY:
-//		return "PORTABILITY";
-//	case GL_DEBUG_TYPE_PERFORMANCE:
-//		return "PERFORMANCE";
-//	case GL_DEBUG_TYPE_OTHER:
-//		return "OTHER";
-//	case GL_DEBUG_TYPE_MARKER:
-//		return "MARKER";
-//	case GL_DEBUG_TYPE_POP_GROUP:
-//		return "POP_GROUP";
-//	case GL_DEBUG_TYPE_PUSH_GROUP:
-//		return "PUSH_GROUP";
-//	default:
-//		return "Unknown";
-//	}
-//}
+const char * get_debug_type_str(GLenum type){
+	switch(type){
+	case GL_DEBUG_TYPE_ERROR:
+		return "ERROR";
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		return "DEPRECATED_BEHAVIOR";
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		return "UNDEFINED_BEHAVIOR";
+	case GL_DEBUG_TYPE_PORTABILITY:
+		return "PORTABILITY";
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		return "PERFORMANCE";
+	case GL_DEBUG_TYPE_OTHER:
+		return "OTHER";
+	case GL_DEBUG_TYPE_MARKER:
+		return "MARKER";
+	case GL_DEBUG_TYPE_POP_GROUP:
+		return "POP_GROUP";
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		return "PUSH_GROUP";
+	default:
+		return "Unknown";
+	}
+}
 
-//const char* get_debug_severity_str(GLenum severity){
-//	switch(severity){
-//	case GL_DEBUG_SEVERITY_HIGH:
-//		return "HIGH";
-//	case GL_DEBUG_SEVERITY_LOW:
-//		return "LOW";
-//	case GL_DEBUG_SEVERITY_MEDIUM:
-//		return "MEDIUM";
-//	case GL_DEBUG_SEVERITY_NOTIFICATION:
-//		return "NOTIFICATION";
-//	default:
-//		return "Unknown";
-//	}
-//}
+const char* get_debug_severity_str(GLenum severity){
+	switch(severity){
+	case GL_DEBUG_SEVERITY_HIGH:
+		return "HIGH";
+	case GL_DEBUG_SEVERITY_LOW:
+		return "LOW";
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		return "MEDIUM";
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		return "NOTIFICATION";
+	default:
+		return "Unknown";
+	}
+}
 
-//const char* get_debug_source_str(GLenum source){
-//	switch(source){
-//	case GL_DEBUG_SOURCE_API:
-//		return "API";
-//	case GL_DEBUG_SOURCE_APPLICATION:
-//		return "APPLICATION";
-//	case GL_DEBUG_SOURCE_OTHER:
-//		return "OTHER";
-//	case GL_DEBUG_SOURCE_SHADER_COMPILER:
-//		return "SHADER_COMPILER";
-//	case GL_DEBUG_SOURCE_THIRD_PARTY:
-//		return "THIRD_PARTY";
-//	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-//		return "WINDOW_SYSTEM";
-//	default:
-//		return "Unknown";
-//	}
-//}
+const char* get_debug_source_str(GLenum source){
+	switch(source){
+	case GL_DEBUG_SOURCE_API:
+		return "API";
+	case GL_DEBUG_SOURCE_APPLICATION:
+		return "APPLICATION";
+	case GL_DEBUG_SOURCE_OTHER:
+		return "OTHER";
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		return "SHADER_COMPILER";
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		return "THIRD_PARTY";
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		return "WINDOW_SYSTEM";
+	default:
+		return "Unknown";
+	}
+}
 
-//void DebugCallbackARB(GLenum source,
-//                      GLenum type,
-//                      GLuint id,
-//                      GLenum severity,
-//                      GLsizei length,
-//                      const GLchar* message,
-//                      const GLvoid* userParam) {
-//	if(userParam != nullptr ||
-//	   type == GL_DEBUG_TYPE_ERROR)
-//	{
-//		std::cout << "GL Debug Message:"
-//				  << std::endl
-//				  << "\tseverity=" << get_debug_severity_str(severity)
-//				  << ", type=" << get_debug_type_str(type)
-//				  << ", source=" << get_debug_source_str(source)
-//				  << std::endl;
+void DebugCallbackARB(GLenum source,
+					  GLenum type,
+					  GLuint id,
+					  GLenum severity,
+					  GLsizei length,
+					  const GLchar* message,
+					  const GLvoid* userParam) {
+	if(userParam != nullptr ||
+	   type == GL_DEBUG_TYPE_ERROR)
+	{
+		std::cout << "GL Debug Message:"
+				  << std::endl
+				  << "\tseverity=" << get_debug_severity_str(severity)
+				  << ", type=" << get_debug_type_str(type)
+				  << ", source=" << get_debug_source_str(source)
+				  << std::endl;
 
-//		std::cout << "\tmessage=" << std::string(message).substr(0, length) << std::endl;
-//	}
-//}
-//#ifdef __cplusplus
-//extern "C"
-//#endif
-
-#define GL_VERSION                        0x1F02
-typedef const uint8_t* (*glGetString_func)(uint32_t name);
+		std::cout << "\tmessage=" << std::string(message).substr(0, length) << std::endl;
+	}
+}
 
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
     // __chkStk check
     const int sz = 1024;
     char a[sz];
@@ -137,6 +133,7 @@ int main(int argc, char *argv[])
     char c[sz];
     char d[sz];
 //    char e[sz];
+#endif //  WIN32
 
 	// make API version used
 	if (rv_api_1 != 1) {
@@ -165,14 +162,6 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-
-//    const char* gles_lib = R"(C:\Users\Nikita\Programs\gfbuild-angle-39810d-Windows_x64_Release\lib\libGLESv2.dll)";
-//    const char* gles_lib = R"(C:\Program Files\Google\Chrome\Application\97.0.4692.71\swiftshader\libGLESv2.dll)";
-//    if(SDL_GL_LoadLibrary(gles_lib) != 0){
-//        std::cout << "cannot load " << gles_lib << ", error: " << SDL_GetError() << std::endl;
-//        return 1;
-//    }
-
 	SDL_Window* window = SDL_CreateWindow("rv_ffi",
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
@@ -185,17 +174,18 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-
-
 	SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 
-    glGetString_func glGetString = (glGetString_func)SDL_GL_GetProcAddress("glGetString");
+	gladLoadGLES2Loader(SDL_GL_GetProcAddress);
+
     const uint8_t* gl_version = glGetString(GL_VERSION);
     std::cout << "GL version: " << gl_version << std::endl;
 
-//	glEnable(GL_DEBUG_OUTPUT);
-//	// pass here any value to catch only every debug message
-//	glDebugMessageCallback(&DebugCallbackARB, nullptr);
+	if(glDebugMessageCallback != nullptr){
+		glEnable(GL_DEBUG_OUTPUT);
+		// pass here any value to catch only every debug message
+		glDebugMessageCallback(&DebugCallbackARB, nullptr);
+	}
 
     const char* image_surface_path = "res/data/screen.png";
     SDL_Surface* image_surface = IMG_Load(image_surface_path);
@@ -204,24 +194,24 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-//	GLenum gl_error;
-//	GLuint image_texture;
-//	glGenTextures(1, &image_texture);
+	GLenum gl_error;
+	GLuint image_texture;
+	glGenTextures(1, &image_texture);
 
-//	glBindTexture(GL_TEXTURE_2D, image_texture);
-//	gl_error = glGetError();
-//	if(gl_error != 0){
-//		std::cout << "glBindTexture error: " << gl_error << std::endl;
-//	}
+	glBindTexture(GL_TEXTURE_2D, image_texture);
+	gl_error = glGetError();
+	if(gl_error != 0){
+		std::cout << "glBindTexture error: " << gl_error << std::endl;
+	}
 
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_surface->w, image_surface->h, 0,
-//				 GL_RGBA, GL_UNSIGNED_BYTE, image_surface->pixels);
-//	gl_error = glGetError();
-//	if(gl_error != 0){
-//		std::cout << "glTexImage2D error: " << gl_error << std::endl;
-//	}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_surface->w, image_surface->h, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, image_surface->pixels);
+	gl_error = glGetError();
+	if(gl_error != 0){
+		std::cout << "glTexImage2D error: " << gl_error << std::endl;
+	}
 
-//	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	const char* height_path = "res/data/height.png";
 	SDL_Surface* height_surface = IMG_Load(height_path);
@@ -367,7 +357,7 @@ int main(int argc, char *argv[])
 
 	bool close = false;
 	while (!close) {
-//		glClear( GL_COLOR_BUFFER_BIT );
+		glClear( GL_COLOR_BUFFER_BIT );
 		SDL_Event event;
 
 		// Events management
@@ -446,33 +436,33 @@ int main(int argc, char *argv[])
 		std::cout << "rv_render" << std::endl;
 		rv_render(context, viewport);
 
-//		gl_error = glGetError();
-//		if(gl_error != 0){
-//			std::cout << "rv_render error: " << gl_error << std::endl;
-//		}
+		gl_error = glGetError();
+		if(gl_error != 0){
+			std::cout << "rv_render error: " << gl_error << std::endl;
+		}
 
-//		// reset unpack options
-//		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-//		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-//		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-//		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+		// reset unpack options
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
 
-//		glBindTexture(GL_TEXTURE_2D, image_texture);
-//		gl_error = glGetError();
-//		if(gl_error != 0){
-//			std::cout << "glBindTexture error: " << gl_error << std::endl;
-//		}
+		glBindTexture(GL_TEXTURE_2D, image_texture);
+		gl_error = glGetError();
+		if(gl_error != 0){
+			std::cout << "glBindTexture error: " << gl_error << std::endl;
+		}
 
-//		// Test Segfault
-//		glTexSubImage2D(GL_TEXTURE_2D,
-//						0,
-//						0, 0, image_surface->w, image_surface->h,
-//						 GL_RGBA, GL_UNSIGNED_BYTE, image_surface->pixels);
+		// Test Segfault
+		glTexSubImage2D(GL_TEXTURE_2D,
+						0,
+						0, 0, image_surface->w, image_surface->h,
+						 GL_RGBA, GL_UNSIGNED_BYTE, image_surface->pixels);
 
-//		gl_error = glGetError();
-//		if(gl_error != 0){
-//			std::cout << "glTexImage2D error: " << gl_error << std::endl;
-//		}
+		gl_error = glGetError();
+		if(gl_error != 0){
+			std::cout << "glTexImage2D error: " << gl_error << std::endl;
+		}
 
 		SDL_GL_SwapWindow(window);
 
