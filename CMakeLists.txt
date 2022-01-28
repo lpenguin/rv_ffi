@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(rv_ffi LANGUAGES CXX)
+project(rv_ffi LANGUAGES C CXX)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 FIND_PACKAGE(SDL2 REQUIRED)
 FIND_PACKAGE(SDL2_image REQUIRED)
-FIND_PACKAGE(GLES2 REQUIRED)
 FIND_PACKAGE(RustyVangers REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20) # MSVC only
@@ -13,21 +12,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ")
 
+add_subdirectory(glad)
+
 add_executable(rv_ffi
 	main.cpp
-        vange_rs_stub.cpp
+	vange_rs_stub.cpp
 	vange_rs.h
 	)
 
-include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+include_directories(
+	${SDL2_INCLUDE_DIRS}
+	${SDL2_IMAGE_INCLUDE_DIRS}
+	"${PROJECT_SOURCE_DIR}/glad/include"
+	)
 
 
 set(RV_FFI_LIBS
+	glad
     ${RUSTY_VANGERS_LIBRARY}
     ${SDL2_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
-    ${GLES2_LIBRARY}
-    pthread
+    pthread	
     )
 
 if(WIN32 AND NOT MSVC)
