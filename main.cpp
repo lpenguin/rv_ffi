@@ -316,7 +316,7 @@ int main()
 	rv_map_update_data(context, update_region);
 
 
-	float angle = -M_PI / 3;
+	float angle = 0;
 	float angle_step = M_PI/30.0f;
 	float move_step = 10;
 
@@ -328,9 +328,17 @@ int main()
 
 	rv_quaternion rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
 
-
+	update_region = {
+		.x = (int)position.x - 43,
+		.y = (int)position.y - 43,
+		.width = 88,
+		.height = 88,
+	};
+	std::cout << "rv_map_update_data" << std::endl;
+	rv_map_update_data(context, update_region);
 
 	bool close = false;
+	bool update = false;
 	while (!close) {
 		glClear( GL_COLOR_BUFFER_BIT );
 		SDL_Event event;
@@ -372,12 +380,28 @@ int main()
 					angle += angle_step;
 					rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
 					break;
+				case SDL_SCANCODE_U:
+					update = true;
+					break;
 				default:
 					break;
 				}
 				break;
 			}
 
+
+		}
+
+		if(update){
+			update = false;
+			update_region = {
+				.x = (int)position.x - 43,
+				.y = (int)position.y - 43,
+				.width = 88,
+				.height = 88,
+			};
+			std::cout << "rv_map_update_data" << std::endl;
+			rv_map_update_data(context, update_region);
 
 		}
 
