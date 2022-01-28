@@ -47,6 +47,17 @@ if(WIN32 AND NOT MSVC)
         )
 endif(WIN32 AND NOT MSVC)
 
+option(USE_ANGLE "Use ANGLE library instead of driver GLES profile. libGLES.dll must be in the working directory")
+
+if(USE_ANGLE)
+	target_compile_definitions(
+		rv_ffi
+		PUBLIC
+		USE_ANGLE
+		)
+endif(USE_ANGLE)
+
+
 TARGET_LINK_LIBRARIES(rv_ffi
     ${RV_FFI_LIBS}
 )

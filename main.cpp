@@ -150,7 +150,9 @@ int main(int argc, char *argv[])
 		printf("error initializing SDL: %s\n", SDL_GetError());
 		return 1;
 	}
-    SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+#ifdef USE_ANGLE
+	SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+#endif
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 //	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
