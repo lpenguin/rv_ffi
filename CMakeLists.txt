@@ -27,7 +27,6 @@ set(RV_FFI_LIBS
     ${SDL2_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
     ${GLES2_LIBRARY}
-    # ld
     pthread
     )
 
@@ -46,6 +45,13 @@ if(WIN32 AND NOT MSVC)
         ${MINGW_WINDOWS_LIBS}
         )
 endif(WIN32 AND NOT MSVC)
+
+if(UNIX)
+	set(RV_FFI_LIBS
+		${RV_FFI_LIBS}
+		dl
+		)
+endif(UNIX)
 
 option(USE_ANGLE "Use ANGLE library instead of driver GLES profile. libGLES.dll must be in the working directory")
 
