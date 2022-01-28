@@ -262,6 +262,12 @@ int main()
 	std::cout << "rv_init" << std::endl;
 	rv_context context = rv_init(init_desc);
 
+	    uint8_t* palette_data = (uint8_t*)palette_surface->pixels;
+		uint8_t palette[0x300] = {};
+		for(int i = 0; i < 0x300; i++){
+			palette[i] = palette_data[i];
+		}
+
 	rv_map_description map_desc {
 		.width = map_width,
 		.height = map_height,
@@ -269,16 +275,11 @@ int main()
 		.material_begin_offsets = material_begin_offsets,
 		.material_end_offsets = material_end_offsets,
 		.material_count = material_count,
+		.palette = palette,
 	};
 
 	std::cout << "rv_map_init" << std::endl;
 	rv_map_init(context, map_desc);
-
-	uint8_t* palette_data = (uint8_t*)palette_surface->pixels;
-	uint8_t palette[0x300] = {};
-	for(int i = 0; i < 0x300; i++){
-		palette[i] = palette_data[i];
-	}
 
 	std::cout << "rv_map_update_palette" << std::endl;
 	rv_map_update_palette(context, 0, 0x100, palette);
