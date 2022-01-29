@@ -5,11 +5,11 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <string>
+#include <fstream>
 #include "glad/glad.h"
+#include "m3d/Model.h"
 
 #include "vange_rs.h"
-
-extern "C" int rv_api_1;
 
 using namespace std;
 
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 #endif //  WIN32
 
 	// make API version used
-	if (rv_api_1 != 1) {
+	if (rv_api_2 != 1) {
 		return 1;
 	}
 
@@ -186,6 +186,15 @@ int main(int argc, char *argv[])
 		// pass here any value to catch only every debug message
 		glDebugMessageCallback(&DebugCallbackARB, nullptr);
 	}
+
+	Model model;
+	const char* model_path = "res/data/m1.m3d";
+	std::FILE* f = std::fopen(model_path, "rb");
+	if(f == nullptr){
+		printf("error loading model \"%s\"\n", model_path);
+		return 1;
+	}
+	read(f, model);
 
     const char* image_surface_path = "res/data/screen.png";
     SDL_Surface* image_surface = IMG_Load(image_surface_path);
@@ -353,8 +362,19 @@ int main(int argc, char *argv[])
 
 	rv_quaternion rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
 
+	uint64_t model_handle = rv_model_create(context, "mechos1", &model);
+	uint64_t model_instance_handle = rv_model_instance_create(context, model_handle, 1);
+	rv_transform model_transform = rv_transform {
+		.position = rv_vector3 {
+			.x = 900,
+			.y = 512,
+			.z = 160,
+		},
+		.scale = 1.0f,
+		.rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, 0),
+	};
 
-
+	rv_model_instance_set_transform(context, model_instance_handle, model_transform);
 	bool close = false;
 	while (!close) {
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -421,6 +441,7 @@ int main(int argc, char *argv[])
 
 		rv_transform transform {
 			.position = position,
+			.scale = 1,
 			.rotation = rotation,
 		};
 
@@ -468,6 +489,9 @@ int main(int argc, char *argv[])
 
 		SDL_Delay(1000 / 60);
 	}
+
+	rv_model_instance_destroy(context, model_instance_handle);
+	rv_model_destroy(context, model_handle);
 
 	rv_map_exit(context);
 	rv_exit(context);
