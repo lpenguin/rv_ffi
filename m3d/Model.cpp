@@ -117,4 +117,40 @@ void read<Model>(std::FILE* f,  Model& model) {
 			polygon.normals[index] = &model.normals[norm_ind];
 		}
 	}
+
+	fseek(f, 3 * model.num_poly * 4, SEEK_CUR);
+}
+
+template<>
+void read<Wheel>(FILE* f, Wheel& wheel)
+{
+	read(f, wheel.steer);
+	read(f, wheel.r);
+	read(f, wheel.width);
+	read(f, wheel.radius);
+	read(f, wheel.bound_index);
+	if(wheel.steer){
+		read(f, wheel.model);
+	}
+	wheel.dZ = 0;
+}
+
+template<>
+void read<Object>(FILE* f, Object& object)
+{
+	read(f, object.body);
+	read(f, object.xmax);
+	read(f, object.ymax);
+	read(f, object.zmax);
+	read(f, object.rmax);
+	read(f, object.n_wheels);
+	read(f, object.n_debris);
+	read(f, object.body_color_offset);
+	read(f, object.body_color_shift);
+	if(object.n_wheels){
+		object.wheels = new Wheel[object.n_wheels];
+		for(int i = 0; i < object.n_wheels; i++){
+			read(f, object.wheels[i]);
+		}
+	}
 }

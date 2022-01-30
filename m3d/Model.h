@@ -51,6 +51,33 @@ struct Model {
 	DBM J;
 };
 
+struct Wheel {
+	int steer;
+	int side;
+	int width;
+	int radius;
+	int bound_index;
+	Model model;
+	DBV r,n;
+	double dZ;
+};
+
+struct Object {
+	Model body;
+	int xmax,ymax,zmax,zmin;
+	int rmax;
+
+	int body_color_offset;
+	int body_color_shift;
+
+	int n_wheels;
+	Wheel* wheels;
+
+	int n_debris;
+//	Model* debris;
+//	Model* bound_debris;
+};
+
 template<typename T>
 void read(std::FILE* f, T& value){
 	fread(&value, sizeof(T), 1, f);
@@ -69,6 +96,11 @@ template<>
 void read<Normal>(std::FILE* f, Normal& normal);
 
 template<>
-void read<Model>(std::FILE* f, Model& model);
+void read<Object>(std::FILE* f, Object& object);
+
+
+template<>
+void read<Wheel>(std::FILE* f, Wheel& wheel);
+
 
 #endif // MODEL_H

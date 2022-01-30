@@ -8,6 +8,7 @@
 #include <fstream>
 #include "glad/glad.h"
 #include "m3d/Model.h"
+#include <vector>
 
 #include "vange_rs.h"
 
@@ -187,14 +188,14 @@ int main(int argc, char *argv[])
 		glDebugMessageCallback(&DebugCallbackARB, nullptr);
 	}
 
-	Model model;
+	Object object;
 	const char* model_path = "res/data/m1.m3d";
 	std::FILE* f = std::fopen(model_path, "rb");
 	if(f == nullptr){
 		printf("error loading model \"%s\"\n", model_path);
 		return 1;
 	}
-	read(f, model);
+	read(f, object);
 
     const char* image_surface_path = "res/data/screen.png";
     SDL_Surface* image_surface = IMG_Load(image_surface_path);
@@ -350,31 +351,63 @@ int main(int argc, char *argv[])
 	rv_map_update_data(context, update_region);
 
 
-	float angle = -M_PI / 3;
+	float angle = -M_PI * 0.1;
 	float angle_step = M_PI/30.0f;
 	float move_step = 10;
 
 	rv_vector3 position {
-		.x = 1024,
-		.y = 1024,
-		.z = 512,
+		.x = 934,
+		.y = 15070,
+		.z = 712,
 	};
 
 	rv_quaternion rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
 
-	uint64_t model_handle = rv_model_create(context, "mechos1", &model);
-	uint64_t model_instance_handle = rv_model_instance_create(context, model_handle, 1);
+
+	std::vector<uint64_t> model_handles;
+	std::vector<uint64_t> instance_handles;
+
+	const uint8_t color_id = 21;
+	uint64_t body_handle = rv_model_create(context, "mechos1", &object.body);
+	model_handles.push_back(body_handle);
+
+	uint64_t body_instance_handle = rv_model_instance_create(context, body_handle, color_id);
+	instance_handles.push_back(body_instance_handle);
+
 	rv_transform model_transform = rv_transform {
 		.position = rv_vector3 {
-			.x = 900,
-			.y = 512,
-			.z = 160,
+			.x = 700,
+			.y = 14800,
+			.z = 150,
 		},
 		.scale = 1.0f,
 		.rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, 0),
 	};
 
-	rv_model_instance_set_transform(context, model_instance_handle, model_transform);
+	rv_model_instance_set_transform(context, body_instance_handle, model_transform);
+
+	char name[1024];
+	for(int i = 0; i < object.n_wheels; i++){
+		if(!object.wheels[i].steer) {
+			continue;
+		}
+		sprintf(name, "wheel %d", i);
+		uint64_t wheel_h = rv_model_create(context, name, &object.wheels[i].model);
+		model_handles.push_back(wheel_h);
+		rv_transform wheel_transform = rv_transform {
+			.position = rv_vector3 {
+				.x = model_transform.position.x + object.wheels[i].model.x_off,
+				.y = model_transform.position.y + object.wheels[i].model.y_off,
+				.z = model_transform.position.z + object.wheels[i].model.z_off,
+			},
+			.scale = model_transform.scale,
+			.rotation = model_transform.rotation,
+		};
+		uint64_t wheel_ih = rv_model_instance_create(context, wheel_h, color_id);
+		instance_handles.push_back(wheel_ih);
+		rv_model_instance_set_transform(context, wheel_ih, wheel_transform);
+	}
+
 	bool close = false;
 	while (!close) {
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -392,10 +425,10 @@ int main(int argc, char *argv[])
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.scancode) {
 				case SDL_SCANCODE_W:
-					position.y += move_step;
+					position.y -= move_step;
 					break;
 				case SDL_SCANCODE_S:
-					position.y -= move_step;
+					position.y += move_step;
 					break;
 				case SDL_SCANCODE_A:
 					position.x -= move_step;
@@ -490,8 +523,13 @@ int main(int argc, char *argv[])
 		SDL_Delay(1000 / 60);
 	}
 
-	rv_model_instance_destroy(context, model_instance_handle);
-	rv_model_destroy(context, model_handle);
+	for(uint64_t h: instance_handles){
+		rv_model_instance_destroy(context, h);
+	}
+
+	for(uint64_t h: model_handles){
+		rv_model_destroy(context, h);
+	}
 
 	rv_map_exit(context);
 	rv_exit(context);
