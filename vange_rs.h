@@ -2,6 +2,7 @@
 #define VANGE_RS_H
 
 #include <cstdint>
+#include "m3d/Model.h"
 
 /**
   This is a stub file for the upcoming vange-rs library bindings
@@ -30,6 +31,7 @@ struct rv_quaternion {
 
 struct rv_transform {
 	rv_vector3 position;
+	float scale;
 	rv_quaternion rotation;
 };
 
@@ -74,6 +76,7 @@ typedef void* rv_context;
 #ifdef __cplusplus
 extern "C" {
 #endif
+	extern int32_t rv_api_2;
 	rv_context rv_init(rv_init_descriptor desc);
 
 	void rv_exit(rv_context context);
@@ -92,7 +95,17 @@ extern "C" {
 
 	void rv_map_update_palette(rv_context context, int32_t first_entry, int32_t entry_count, uint8_t* palette);
 
+	uint64_t rv_model_create(rv_context context, const char* name, Model* model);
+
+	void rv_model_destroy(rv_context context, uint64_t handle);
+
 	void rv_render(rv_context context, rv_rect viewport);
+
+	uint64_t rv_model_instance_create(rv_context context, uint64_t model_handle, uint8_t color_id);
+
+	void rv_model_instance_set_transform(rv_context context, uint64_t handle, rv_transform transform);
+
+	void rv_model_instance_destroy(rv_context context, uint64_t handle);
 
 #ifdef __cplusplus
 }

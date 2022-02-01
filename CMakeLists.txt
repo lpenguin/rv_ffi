@@ -18,6 +18,8 @@ add_executable(rv_ffi
 	main.cpp
 	vange_rs_stub.cpp
 	vange_rs.h
+	m3d/Model.cpp
+	m3d/Model.h
 	)
 
 include_directories(
