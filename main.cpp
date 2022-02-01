@@ -351,18 +351,17 @@ int main(int argc, char *argv[])
 	rv_map_update_data(context, update_region);
 
 
-	float angle = -M_PI * 0.1;
+	float camera_angle = -M_PI * 0.1;
 	float angle_step = M_PI/30.0f;
 	float move_step = 10;
 
-	rv_vector3 position {
-		.x = 934,
-		.y = 15070,
+	rv_vector3 camera_position {
+		.x = 1520,
+		.y = 16090,
 		.z = 712,
 	};
 
-	rv_quaternion rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
-
+	rv_quaternion camera_rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, camera_angle);
 
 	std::vector<uint64_t> model_handles;
 	std::vector<uint64_t> instance_handles;
@@ -374,39 +373,34 @@ int main(int argc, char *argv[])
 	uint64_t body_instance_handle = rv_model_instance_create(context, body_handle, color_id);
 	instance_handles.push_back(body_instance_handle);
 
-	rv_transform model_transform = rv_transform {
-		.position = rv_vector3 {
-			.x = 700,
-			.y = 14800,
-			.z = 150,
-		},
-		.scale = 1.0f,
-		.rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, 0),
+	std::vector<rv_vector3> positions = {
+		{1520, 15667, 30},
+		{1378, 15383, 163},
+		{1743, 15270, 110},
 	};
+	int32_t pos_index = 0;
 
-	rv_model_instance_set_transform(context, body_instance_handle, model_transform);
-
-	char name[1024];
-	for(int i = 0; i < object.n_wheels; i++){
-		if(!object.wheels[i].steer) {
-			continue;
-		}
-		sprintf(name, "wheel %d", i);
-		uint64_t wheel_h = rv_model_create(context, name, &object.wheels[i].model);
-		model_handles.push_back(wheel_h);
-		rv_transform wheel_transform = rv_transform {
-			.position = rv_vector3 {
-				.x = model_transform.position.x + object.wheels[i].model.x_off,
-				.y = model_transform.position.y + object.wheels[i].model.y_off,
-				.z = model_transform.position.z + object.wheels[i].model.z_off,
-			},
-			.scale = model_transform.scale,
-			.rotation = model_transform.rotation,
-		};
-		uint64_t wheel_ih = rv_model_instance_create(context, wheel_h, color_id);
-		instance_handles.push_back(wheel_ih);
-		rv_model_instance_set_transform(context, wheel_ih, wheel_transform);
-	}
+//	char name[1024];
+//	for(int i = 0; i < object.n_wheels; i++){
+//		if(!object.wheels[i].steer) {
+//			continue;
+//		}
+//		sprintf(name, "wheel %d", i);
+//		uint64_t wheel_h = rv_model_create(context, name, &object.wheels[i].model);
+//		model_handles.push_back(wheel_h);
+//		rv_transform wheel_transform = rv_transform {
+//			.position = rv_vector3 {
+//				.x = model_transform.position.x + object.wheels[i].model.x_off,
+//				.y = model_transform.position.y + object.wheels[i].model.y_off,
+//				.z = model_transform.position.z + object.wheels[i].model.z_off,
+//			},
+//			.scale = model_transform.scale,
+//			.rotation = model_transform.rotation,
+//		};
+//		uint64_t wheel_ih = rv_model_instance_create(context, wheel_h, color_id);
+//		instance_handles.push_back(wheel_ih);
+//		rv_model_instance_set_transform(context, wheel_ih, wheel_transform);
+//	}
 
 	bool close = false;
 	while (!close) {
@@ -425,30 +419,33 @@ int main(int argc, char *argv[])
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.scancode) {
 				case SDL_SCANCODE_W:
-					position.y -= move_step;
+					camera_position.y -= move_step;
 					break;
 				case SDL_SCANCODE_S:
-					position.y += move_step;
+					camera_position.y += move_step;
 					break;
 				case SDL_SCANCODE_A:
-					position.x -= move_step;
+					camera_position.x -= move_step;
 					break;
 				case SDL_SCANCODE_D:
-					position.x += move_step;
+					camera_position.x += move_step;
 					break;
 				case SDL_SCANCODE_Q:
-					position.z -= move_step;
+					camera_position.z -= move_step;
 					break;
 				case SDL_SCANCODE_E:
-					position.z += move_step;
+					camera_position.z += move_step;
 					break;
 				case SDL_SCANCODE_Z:
-					angle -= angle_step;
-					rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
+					camera_angle -= angle_step;
+					camera_rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, camera_angle);
 					break;
 				case SDL_SCANCODE_X:
-					angle += angle_step;
-					rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, angle);
+					camera_angle += angle_step;
+					camera_rotation = rotation_quaternion(rv_vector3{1.0f, .0f, .0f}, camera_angle);
+					break;
+				case SDL_SCANCODE_SPACE:
+					pos_index = (pos_index + 1) % positions.size();
 					break;
 				default:
 					break;
@@ -460,34 +457,53 @@ int main(int argc, char *argv[])
 		}
 
 		// Cycling the level
-		if(position.x < 0){
-			position.x = map_width + position.x;
-		} else if(position.x > map_width ){
-			position.x = position.x - map_width;
+		if(camera_position.x < 0){
+			camera_position.x = map_width + camera_position.x;
+		} else if(camera_position.x > map_width ){
+			camera_position.x = camera_position.x - map_width;
 		}
 
-		if(position.y < 0){
-			position.y = map_height + position.y;
-		} else if(position.y > map_height ){
-			position.y = position.y - map_height;
+		if(camera_position.y < 0){
+			camera_position.y = map_height + camera_position.y;
+		} else if(camera_position.y > map_height ){
+			camera_position.y = camera_position.y - map_height;
 		}
 
 		rv_transform transform {
-			.position = position,
+			.position = camera_position,
 			.scale = 1,
-			.rotation = rotation,
+			.rotation = camera_rotation,
 		};
 
-		std::cout << "rv_camera_set_transform"
-			<< " position="
-			<< position.x << " " << position.y << " " << position.z
-			<< ", rotation="
-			<< rotation.x << " " << rotation.y << " " << rotation.z << " " << rotation.w
-			<< std::endl;
+//		std::cout << "rv_camera_set_transform"
+//			<< " position="
+//			<< camera_position.x << " " << camera_position.y << " " << camera_position.z
+//			<< ", rotation="
+//			<< camera_rotation.x << " " << camera_rotation.y << " " << camera_rotation.z << " " << camera_rotation.w
+//			<< std::endl;
 
 		rv_camera_set_transform(context, transform);
 
-		std::cout << "rv_render" << std::endl;
+//		float scale = 1;
+		float scale = 0.24f;
+//		float z_offset_of_mass_center = -60.260000f;
+		float model_x = positions[pos_index].x;
+		float model_y = positions[pos_index].y;
+		float model_z = lineT[(int)model_y][(int)model_x];
+		rv_transform model_transform = rv_transform {
+			.position = rv_vector3 {
+				.x = model_x,
+				.y = model_y,
+				.z = model_z
+			},
+			.scale = scale,
+			.rotation = rotation_quaternion(rv_vector3{0.0f, 0.0f, 1.0f}, M_PI/2),
+		};
+
+		rv_model_instance_set_transform(context, body_instance_handle, model_transform);
+
+
+//		std::cout << "rv_render" << std::endl;
 		rv_render(context, viewport);
 
 		gl_error = glGetError();
